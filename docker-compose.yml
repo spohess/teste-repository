@@ -1,0 +1,47 @@
+version: '3'
+
+volumes:
+  test-redis-data:
+    driver: local
+  test-mysql-data:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge
+
+services:
+  apache-test:
+    image: spohess/apache
+    container_name: apache-test-cont
+    volumes:
+      - .:/var/www/html/
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+    depends_on:
+      - redis-test
+
+  mysql-test:
+    image: spohess/mysql
+    container_name: mysql-test-cont
+    volumes:
+      - test-mysql-data:/var/lib/mysql
+    ports:
+      - "33062:3306"
+    command: --max_allowed_packet=1073741824 --sql_mode=""
+    environment:
+      - MYSQL_DATABASE=test
+    networks:
+      - backend
+
+  redis-test:
+    image: spohess/redis
+    container_name: redis-test-cont
+    volumes:
+      - test-redis-data:/data
+    ports:
+      - "63792:6379"
+    networks:
+      - backend
